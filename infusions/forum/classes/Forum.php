@@ -281,20 +281,19 @@ class Forum {
                 SELECT f.*,
                 f2.forum_name 'forum_cat_name',
 				t.thread_id, t.thread_lastpost, t.thread_lastpostid, t.thread_subject,
-				count(t.thread_id) 'forum_threadcount', p.post_message,
-				u.user_id, u.user_name, u.user_status, u.user_avatar,
+				p.post_message, u.user_id, u.user_name, u.user_status, u.user_avatar,
 				min(p2.post_datestamp) 'first_post_datestamp'
 				FROM ".DB_FORUMS." f
 				# subforums
 				LEFT JOIN ".DB_FORUMS." f2 ON f.forum_cat = f2.forum_id
-				# thread info
-				LEFT JOIN ".DB_FORUM_THREADS." t ON t.forum_id = f.forum_id AND ".groupaccess('f.forum_access')."
 				# just last post
-				LEFT JOIN ".DB_FORUM_POSTS." p on p.thread_id = t.thread_id and p.post_id = t.thread_lastpostid
+				LEFT JOIN ".DB_FORUM_POSTS." p ON p.forum_id = f.forum_id AND p.post_id = f.forum_lastpostid
+				# thread info
+				LEFT JOIN ".DB_FORUM_THREADS." t ON t.thread_id = p.thread_id
 				# post info
 				LEFT JOIN ".DB_FORUM_POSTS." p2 ON p2.thread_id = t.thread_id
 				# just last post user
-				LEFT JOIN ".DB_USERS." u ON f.forum_lastuser=u.user_id
+				LEFT JOIN ".DB_USERS." u ON f.forum_lastuser = u.user_id
 				".(multilang_table("FO") ? "WHERE f.forum_language='".LANGUAGE."' AND" : "WHERE")." ".groupaccess('f.forum_access')."
 				AND f.forum_id='".intval($this->forum_info['forum_id'])."' OR f.forum_cat='".intval($this->forum_info['forum_id'])."'
 				OR f.forum_branch='".intval($this->forum_info['forum_branch'])."'
